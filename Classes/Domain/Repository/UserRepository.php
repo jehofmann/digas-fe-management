@@ -36,12 +36,14 @@ class UserRepository extends Repository
     /**
      * @var int Storage PID
      */
-    protected $storagePid;
+    protected int $storagePid;
 
     /**
      * @param int $storagePid
+     *
+     * @return void
      */
-    public function setStoragePid($storagePid)
+    public function setStoragePid(int $storagePid): void
     {
         $this->storagePid = $storagePid;
     }
@@ -49,9 +51,10 @@ class UserRepository extends Repository
     /**
      * @param int $deleteTimespan The crdate timestamp to check
      * @param array $feUserGroups Array of Frontend user groups (must be set in constants {$femanager.feUserGroups})
+     *
      * @return User[]
      */
-    public function findInactiveAccounts(int $deleteTimespan, array $feUserGroups)
+    public function findInactiveAccounts(int $deleteTimespan, array $feUserGroups): array
     {
         $query = $this->createQuery();
         $query->getQuerySettings()

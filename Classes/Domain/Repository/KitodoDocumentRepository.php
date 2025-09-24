@@ -31,21 +31,23 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use \TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
+use TYPO3\CMS\Extbase\Persistence\Repository;
 
-class KitodoDocumentRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
+class KitodoDocumentRepository extends Repository
 {
     /**
      * @var string
      */
-    protected $tableName = 'tx_dlf_documents';
+    protected string $tableName = 'tx_dlf_documents';
 
     /**
      * Find Kitodo documents by record_id
      *
      * @param array $documentIds
+     *
      * @return array
      */
-    public function findDocumentsByRecordId(array $documentIds)
+    public function findDocumentsByRecordId(array $documentIds): array
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($this->tableName)->createQueryBuilder();
         $documents = $queryBuilder->select('*')
@@ -64,6 +66,7 @@ class KitodoDocumentRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
      * Map statistic query result to statistic objects
      *
      * @param array $rows
+     *
      * @return KitodoDocument[]
      */
     protected function dataMapQueryResult(array $rows): array

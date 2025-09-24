@@ -25,8 +25,11 @@ namespace Slub\DigasFeManagement\Domain\Repository;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
+use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Driver\Exception;
 use Slub\DigasFeManagement\Domain\Model\Access;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
@@ -41,12 +44,14 @@ class AccessRepository extends Repository
     /**
      * @var int Storage PID
      */
-    protected $storagePid;
+    protected int $storagePid;
 
     /**
      * @param int $storagePid
+     *
+     * @return void
      */
-    public function setStoragePid($storagePid)
+    public function setStoragePid(int $storagePid): void
     {
         $this->storagePid = $storagePid;
     }
@@ -54,10 +59,13 @@ class AccessRepository extends Repository
     /**
      * @var string
      */
-    protected $tableName = 'tx_digasfemanagement_domain_model_access';
+    protected string $tableName = 'tx_digasfemanagement_domain_model_access';
 
     /**
+     * Find all access requests for a given frontend user id.
+     *
      * @param int $feUserId
+     *
      * @return array
      */
     public function findRequestsForUser(int $feUserId): array
@@ -74,7 +82,10 @@ class AccessRepository extends Repository
     }
 
     /**
+     * Count all open access requests for a given frontend user id.
+     *
      * @param int $feUserId
+     *
      * @return int
      */
     public function countByFeUserAndOpen(int $feUserId): int
@@ -95,13 +106,20 @@ class AccessRepository extends Repository
     }
 
     /**
+     * Get all access entries for the given user where access has been granted
+     * but no notification has been sent yet
+     *
      * @param int $feUserId
+     *
      * @return Access[]
-     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
+     *
+     * @throws DBALException
+     * @throws Exception|\TYPO3\CMS\Extbase\Object\Exception
      */
     public function findAccessGrantedEntriesByUser(int $feUserId): array
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($this->tableName)->createQueryBuilder();
+        $queryBuilder = $this->getQueryBuilder();
+
         // start_time + end_time get checked by typo3 core logic
         //remove hidden restriction
         $queryBuilder->getRestrictions()->removeByType(HiddenRestriction::class);
@@ -115,7 +133,7 @@ class AccessRepository extends Repository
             ->from($this->tableName)
             ->orderBy($this->tableName . '.rejected','ASC')
             ->execute()
-            ->fetchAll();
+            ->fetchAllAssociative();
 
         $dataMapper = GeneralUtility::makeInstance(ObjectManager::class)->get(DataMapper::class);
 
@@ -126,10 +144,14 @@ class AccessRepository extends Repository
      * Get uids of fe_users with granted access
      *
      * @return Access[]
+     *
+     * @throws DBALException
+     * @throws Exception|\TYPO3\CMS\Extbase\Object\Exception
      */
-    public function findAccessGrantedUsers()
+    public function findAccessGrantedUsers(): array
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($this->tableName)->createQueryBuilder();
+        $queryBuilder = $this->getQueryBuilder();
+
         // start_time + end_time get checked by typo3 core logic
         //remove hidden restriction
         $queryBuilder->getRestrictions()->removeByType(HiddenRestriction::class);
@@ -142,7 +164,7 @@ class AccessRepository extends Repository
             ->from($this->tableName)
             ->groupBy($this->tableName . '.fe_user')
             ->execute()
-            ->fetchAll();
+            ->fetchAllAssociative();
 
         $dataMapper = GeneralUtility::makeInstance(ObjectManager::class)->get(DataMapper::class);
         return $dataMapper->map(Access::class, $rows);
@@ -152,11 +174,16 @@ class AccessRepository extends Repository
      * Get uids of fe_users with expiring document access
      *
      * @param int $expirationTimestamp
+     *
      * @return Access[]
+     *
+     * @throws DBALException
+     * @throws Exception|\TYPO3\CMS\Extbase\Object\Exception
      */
-    public function findExpirationUsers($expirationTimestamp)
+    public function findExpirationUsers(int $expirationTimestamp): array
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($this->tableName)->createQueryBuilder();
+        $queryBuilder = $this->getQueryBuilder();
+
         $rows = $queryBuilder->select('*')
             ->where(
                 $queryBuilder->expr()->eq($this->tableName . '.expire_notification', 0),
@@ -165,20 +192,27 @@ class AccessRepository extends Repository
             ->from($this->tableName)
             ->groupBy($this->tableName . '.fe_user')
             ->execute()
-            ->fetchAll();
+            ->fetchAllAssociative();
 
         $dataMapper = GeneralUtility::makeInstance(ObjectManager::class)->get(DataMapper::class);
         return $dataMapper->map(Access::class, $rows);
     }
 
     /**
+     * Get all access entries for the given user where access is about to expire
+     * but no notification has been sent yet.
+     *
      * @param int $feUserId
      * @param int $expirationTimestamp
+     *
      * @return array
+     *
+     * @throws DBALException
+     * @throws Exception|\TYPO3\CMS\Extbase\Object\Exception
      */
-    public function findExpiringEntriesByUser(int $feUserId, $expirationTimestamp)
+    public function findExpiringEntriesByUser(int $feUserId, int $expirationTimestamp): array
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($this->tableName)->createQueryBuilder();
+        $queryBuilder = $this->getQueryBuilder();
 
         // start_time + end_time get checked by typo3 core logic
         $rows = $queryBuilder->select('*')
@@ -189,10 +223,20 @@ class AccessRepository extends Repository
             )
             ->from($this->tableName)
             ->execute()
-            ->fetchAll();
+            ->fetchAllAssociative();
 
         $dataMapper = GeneralUtility::makeInstance(ObjectManager::class)->get(DataMapper::class);
 
         return $dataMapper->map(Access::class, $rows);
+    }
+
+    /**
+     * Get QueryBuilder for the repository's table.
+     *
+     * @return QueryBuilder
+     */
+    private function getQueryBuilder(): QueryBuilder
+    {
+        return GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($this->tableName)->createQueryBuilder();
     }
 }

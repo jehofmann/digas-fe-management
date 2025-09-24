@@ -27,9 +27,11 @@ namespace Slub\DigasFeManagement\Domain\Repository;
 
 use Slub\DigasFeManagement\Domain\Model\Statistic;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
@@ -41,15 +43,17 @@ class StatisticRepository extends Repository
     /**
      * @var string
      */
-    protected $tableName = 'tx_digasfemanagement_domain_model_statistic';
+    protected string $tableName = 'tx_digasfemanagement_domain_model_statistic';
 
     /**
      * Add "dateFrom" filter
-     * @param \TYPO3\CMS\Core\Database\Query\QueryBuilder $queryBuilder
+     *
+     * @param QueryBuilder $queryBuilder
      * @param string $dateFrom
+     *
      * @return string
      */
-    protected function addFilterDateFrom($queryBuilder, $dateFrom)
+    protected function addFilterDateFrom(QueryBuilder $queryBuilder, string $dateFrom): string
     {
         $timestamp = strtotime($dateFrom);
         return $queryBuilder->expr()->gte('tstamp', $timestamp);
@@ -59,12 +63,14 @@ class StatisticRepository extends Repository
      * Add "dateTo" filter.
      * Set "dateTo" to today if no date is given
      *
-     * @param \TYPO3\CMS\Core\Database\Query\QueryBuilder $queryBuilder
-     * @param $dateTo
+     * @param QueryBuilder $queryBuilder
+     * @param string $dateTo
+     *
      * @return string
+     *
      * @throws \Exception
      */
-    protected function addFilterDateTo($queryBuilder, $dateTo)
+    protected function addFilterDateTo(QueryBuilder $queryBuilder, string $dateTo): string
     {
         $timestamp = strtotime($dateTo);
 
@@ -83,9 +89,10 @@ class StatisticRepository extends Repository
      * @param string|null $dateFrom
      * @param string|null $dateTo
      * @param int|null $feUserUid
+     *
      * @return array
      */
-    public function findForFilter($dateFrom = null, $dateTo = null, $feUserUid = null)
+    public function findForFilter($dateFrom = null, $dateTo = null, $feUserUid = null): array
     {
         $queryBuilder = $this->createStatisticQuery();
         $filterConditions = [];
@@ -112,9 +119,9 @@ class StatisticRepository extends Repository
     /**
      * Create statistic filter query
      *
-     * @return \TYPO3\CMS\Core\Database\Query\QueryBuilder
+     * @return QueryBuilder
      */
-    protected function createStatisticQuery()
+    protected function createStatisticQuery(): QueryBuilder
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($this->tableName)->createQueryBuilder();
         $queryBuilder->select('*')
@@ -132,9 +139,10 @@ class StatisticRepository extends Repository
      * Map statistic query result to statistic objects
      *
      * @param array $rows
+     *
      * @return array
      */
-    protected function dataMapQueryResult($rows)
+    protected function dataMapQueryResult(array $rows): array
     {
         /** @var DataMapper $dataMapper */
         $dataMapper = GeneralUtility::makeInstance(ObjectManager::class)->get(DataMapper::class);
@@ -146,9 +154,10 @@ class StatisticRepository extends Repository
      * Get whole statistic
      *
      * @param int|null $feUserUid
+     *
      * @return array
      */
-    public function findForStatistic($feUserUid = null)
+    public function findForStatistic($feUserUid = null): array
     {
         $queryBuilder = $this->createStatisticQuery();
 
@@ -169,9 +178,9 @@ class StatisticRepository extends Repository
      * @param int $feUserUid
      * @param int $documentId
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return QueryResultInterface
      */
-    public function findOneByFeUserAndDocument($feUserUid, $documentId)
+    public function findOneByFeUserAndDocument(int $feUserUid, int $documentId)
     {
         $query = $this->createQuery();
 
