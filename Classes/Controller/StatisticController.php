@@ -30,7 +30,7 @@ use In2code\Femanager\Utility\LocalizationUtility;
 use Slub\DigasFeManagement\Domain\Model\Statistic;
 use Slub\DigasFeManagement\Domain\Validator\StatisticTstampValidator;
 use Slub\SlubWebDigas\Domain\Repository\KitodoDocumentRepository;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
@@ -231,30 +231,38 @@ class StatisticController extends AbstractController
      */
     protected function validateStatisticFilter(array $filterParams): array
     {
-        $dateFrom = null;
-        $dateTo = null;
+        return [
+            'dateFrom' => $this->validateDate($filterParams, 'dateFrom'),
+            'dateTo' => $this->validateDate($filterParams, 'dateTo')
+        ];
+    }
+
+    /**
+     * Validate date
+     *
+     * @param array $filterParams
+     * @param string $dateToValidate
+     *
+     * @return string|null
+     */
+    private function validateDate(array $filterParams, string $dateToValidate)
+    {
+        $date = null;
         $dateValidator = new StatisticTstampValidator();
 
-        if (!empty($filterParams['dateFrom'])) {
-            $dateFrom = $filterParams['dateFrom'];
-            $dateFromError = $dateValidator->validate($dateFrom);
-            if ($dateFromError->hasErrors() === true) {
-                $this->addFlashMessage(LocalizationUtility::translate('statistic.dateFrom.validationError', 'DigasFeManagement'), '', FlashMessage::ERROR);
+        if (!empty($filterParams[$dateToValidate])) {
+            $date = $filterParams[$dateToValidate];
+            $dateError = $dateValidator->validate($date);
+            if ($dateError->hasErrors() === true) {
+                $this->addFlashMessage(
+                    LocalizationUtility::translate('statistic.' . $dateToValidate. '.validationError', 'DigasFeManagement'),
+                    '',
+                    AbstractMessage::ERROR
+                );
             }
         }
 
-        if (!empty($filterParams['dateTo'])) {
-            $dateTo = $filterParams['dateTo'];
-            $dateToError = $dateValidator->validate($dateTo);
-            if ($dateToError->hasErrors() === true) {
-                $this->addFlashMessage(LocalizationUtility::translate('statistic.dateTo.validationError', 'DigasFeManagement'), '', FlashMessage::ERROR);
-            }
-        }
-
-        return [
-            'dateFrom' => $dateFrom,
-            'dateTo' => $dateTo,
-        ];
+        return $date;
     }
 
     /**
