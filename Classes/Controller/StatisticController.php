@@ -29,12 +29,12 @@ use In2code\Femanager\Controller\AbstractController;
 use In2code\Femanager\Utility\LocalizationUtility;
 use Slub\DigasFeManagement\Domain\Model\Statistic;
 use Slub\DigasFeManagement\Domain\Validator\StatisticTstampValidator;
+use Slub\SlubWebDigas\Domain\Repository\KitodoDocumentRepository;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Slub\SlubWebDigas\Domain\Repository\KitodoDocumentRepository;
-
-use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
+use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 
 /**
  * Class StatisticController
@@ -165,43 +165,31 @@ class StatisticController extends AbstractController
     /**
      * User statistic action
      *
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException
+     * @throws NoSuchArgumentException
      */
     public function viewAction()
     {
         if (!$this->user) {
-            // if no logged in user is present, the plugin will fail --> abort
+            // if no logged-in user is present, the plugin will fail --> abort
             return false;
         }
 
-        $requestMethod = $this->request->getMethod();
-        $filterSubmit = $this->request->hasArgument('statistic');
-
-        if ($requestMethod === 'POST' && $filterSubmit === true) {
-            $filterParams = $this->request->getArgument('statistic');
-            $statisticFilter = $this->validateStatisticFilter($filterParams);
-            $statistic = $this->statisticRepository->findForFilter($statisticFilter['dateFrom'], $statisticFilter['dateTo'], $this->user->getUid());
-        } else {
-            $statistic = $this->statisticRepository->findForStatistic($this->user->getUid());
-        }
+        $statistic = $this->getStatistic($this->user->getUid());
 
         $this->view->assignMultiple([
-            'statistic' => $statistic,
-            'dateFrom' => $statisticFilter['dateFrom'] ?? null,
-            'dateTo' => $statisticFilter['dateTo'] ?? date('Y-m-d')
+            'statistic' => $statistic['result'],
+            'dateFrom' => $statistic['dateFrom'],
+            'dateTo' => $statistic['dateTo']
         ]);
     }
 
     /**
      * View single user statistic action
      *
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException
+     * @throws NoSuchArgumentException
      */
     public function viewSingleAction()
     {
-        $requestMethod = $this->request->getMethod();
-        $filterSubmit = $this->request->hasArgument('statistic');
-
         $adminRequest = GeneralUtility::_GP('tx_digasfemanagement_administration');
 
         if ($adminRequest['user'] > 0 && $adminRequest['action'] === 'show') {
@@ -210,53 +198,38 @@ class StatisticController extends AbstractController
             return false;
         }
 
-        if ($requestMethod === 'POST' && $filterSubmit === true) {
-            $filterParams = $this->request->getArgument('statistic');
-            $statisticFilter = $this->validateStatisticFilter($filterParams);
-            $statistic = $this->statisticRepository->findForFilter($statisticFilter['dateFrom'], $statisticFilter['dateTo'], $userId);
-        } else {
-            $statistic = $this->statisticRepository->findForStatistic($userId);
-        }
+        $statistic = $this->getStatistic($userId);
 
         $this->view->assignMultiple([
             'userId' => $userId,
-            'statistic' => $statistic,
-            'dateFrom' => $statisticFilter['dateFrom'] ?? null,
-            'dateTo' => $statisticFilter['dateTo'] ?? date('Y-m-d')
+            'statistic' => $statistic['result'],
+            'dateFrom' => $statistic['dateFrom'],
+            'dateTo' => $statistic['dateTo']
         ]);
     }
 
     /**
      * Admin statistic action
      *
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException
+     * @throws NoSuchArgumentException
      */
     public function administrationAction()
     {
-        $requestMethod = $this->request->getMethod();
-        $filterSubmit = $this->request->hasArgument('statistic');
-
-        if ($requestMethod === 'POST' && $filterSubmit === true) {
-            $filterParams = $this->request->getArgument('statistic');
-            $statisticFilter = $this->validateStatisticFilter($filterParams);
-
-            $statistic = $this->statisticRepository->findForFilter($statisticFilter['dateFrom'], $statisticFilter['dateTo']);
-        } else {
-            $statistic = $this->statisticRepository->findForStatistic();
-        }
+        $statistic = $this->getStatistic();
 
         $this->view->assignMultiple([
-            'statistic' => $statistic,
-            'dateFrom' => $statisticFilter['dateFrom'] ?? null,
-            'dateTo' => $statisticFilter['dateTo'] ?? date('Y-m-d')
+            'statistic' => $statistic['result'],
+            'dateFrom' => $statistic['dateFrom'],
+            'dateTo' => $statistic['dateTo']
         ]);
     }
 
     /**
      * @param array $filterParams
+     *
      * @return array
      */
-    protected function validateStatisticFilter($filterParams)
+    protected function validateStatisticFilter(array $filterParams): array
     {
         $dateFrom = null;
         $dateTo = null;
@@ -284,5 +257,36 @@ class StatisticController extends AbstractController
         ];
     }
 
+    /**
+     * Get statistic data.
+     *
+     * @param int|null $userId
+     *
+     * @return array
+     *
+     * @throws NoSuchArgumentException
+     */
+    private function getStatistic($userId = null): array
+    {
+        $requestMethod = $this->request->getMethod();
+        $filterSubmit = $this->request->hasArgument('statistic');
 
+        if ($requestMethod === 'POST' && $filterSubmit === true) {
+            $filterParams = $this->request->getArgument('statistic');
+            $statisticFilter = $this->validateStatisticFilter($filterParams);
+
+            return [
+                'result' => $this->statisticRepository->findForFilter($statisticFilter['dateFrom'], $statisticFilter['dateTo'], $userId),
+                'dateFrom' => $statisticFilter['dateFrom'],
+                'dateTo' => $statisticFilter['dateTo']
+            ];
+
+        } else {
+            return [
+                'result' => $this->statisticRepository->findForStatistic($userId),
+                'dateFrom' => null,
+                'dateTo' => date('Y-m-d')
+            ];
+        }
+    }
 }
