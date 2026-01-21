@@ -6,17 +6,17 @@ class SaveStatistics {
             downloadPageLinkCls: 'download-document.page',
         }
         this.documentId = null;
-        const documentIdMetadata = document.querySelector('.dlf-identifier');
 
-        if (documentIdMetadata !== null && typeof documentIdMetadata.dataset.id !== 'undefined') {
-                this.documentId = documentIdMetadata.dataset.id;
+        // Get the document ID from URL parameters (tx_dlf[id])
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('tx_dlf[id]')) {
+            this.documentId = urlParams.get('tx_dlf[id]');
         }
 
         // initialize listener
         if (document.querySelector(`.${this.options.downloadWorkLinkCls}`)) {
             this.initializeListener();
         }
-
     }
 
     /**
