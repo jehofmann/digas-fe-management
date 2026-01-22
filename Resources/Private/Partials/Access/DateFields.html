@@ -41,7 +41,12 @@
             </f:then>
             <f:else>
                 <f:if condition="{access.endTime} > 0">
-                    <f:format.date date="{access.endTimeString}" format="%d.%m.%Y" />
+                    <f:then>
+                        <f:format.date date="{access.endTime}" format="%d.%m.%Y" />
+                    </f:then>
+                    <f:else>
+                        -
+                    </f:else>
                 </f:if>
             </f:else>
         </f:if>

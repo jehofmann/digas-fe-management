@@ -1,122 +1,105 @@
-
 renderingOptions:
-  submitButtonLabel: Submit
+    submitButtonLabel: Submit
 identifier: contactRegisteredUsersLocal
 label: contactRegisteredUsersLocal
 type: Form
 prototypeName: standard
 finishers:
-  -
-    options:
-      subject: finisher.EmailToReceiver.subject
-      senderAddress: contact@example.com
-      senderName: 'LfULG DiGA.Sax'
-      attachUploads: false
-      translation:
-        language: default
-      recipients:
-        contact@example.com: 'LfULG DiGA.Sax'
-      replyToRecipients:
-        '{email}': ''
-      addHtmlPart: true
-    identifier: EmailToReceiver
-  -
-    options:
-      subject: finisher.EmailToSender.subject
-      senderAddress: contact@example.com
-      senderName: 'LfULG DiGA.Sax'
-      attachUploads: false
-      recipients:
-        '{email}': '{firstname} {lastname}'
-      replyToRecipients:
-        example@example.com: ''
-      addHtmlPart: true
-    identifier: EmailToSender
-  -
-    options:
-      subject: finisher.Confirmation.message
-    identifier: Confirmation
+    - options:
+          subject: finisher.EmailToReceiver.subject
+          senderAddress: contact@example.com
+          senderName: "LfULG DiGA.Sax"
+          attachUploads: false
+          recipients:
+              contact@example.com: "LfULG DiGA.Sax"
+          replyToRecipients:
+              "{email}": ""
+          addHtmlPart: true
+      identifier: EmailToReceiver
+    - options:
+          subject: finisher.EmailToSender.subject
+          senderAddress: contact@example.com
+          senderName: "LfULG DiGA.Sax"
+          attachUploads: false
+          recipients:
+              "{email}": "{firstname} {lastname}"
+          replyToRecipients:
+              example@example.com: ""
+          addHtmlPart: true
+      identifier: EmailToSender
+    - options:
+          subject: finisher.Confirmation.message
+      identifier: Confirmation
 renderables:
-  -
-    renderingOptions:
-      previousButtonLabel: 'Previous step'
-      nextButtonLabel: 'Neue Seite'
-    identifier: page-1
-    type: Page
-    renderables:
-      -
-        defaultValue: ''
-        identifier: lastname
-        type: Text
-        properties:
-          fluidAdditionalAttributes:
-            disabled: disabled
-            autocomplete: 'off'
-        label: Nachname
-      -
-        defaultValue: ''
-        identifier: firstname
-        type: Text
-        properties:
-          fluidAdditionalAttributes:
-            disabled: disabled
-            autocomplete: 'off'
-        label: Vorname
-      -
-        defaultValue: ''
-        identifier: company
-        type: Text
-        properties:
-          fluidAdditionalAttributes:
-            disabled: disabled
-            autocomplete: 'off'
-        label: Firma/Organisation
-      -
-        defaultValue: ''
-        identifier: email
-        type: Text
-        properties:
-          fluidAdditionalAttributes:
-            disabled: disabled
-            autocomplete: 'off'
-        label: 'E-Mail Adresse'
-      -
-        defaultValue: ''
-        identifier: phone
-        type: Text
-        properties:
-          fluidAdditionalAttributes:
-            disabled: disabled
-            autocomplete: 'off'
-        label: Telefonnummer
-      -
-        defaultValue: ''
-        identifier: subject
-        type: Text
-        properties:
-          fluidAdditionalAttributes:
-            autocomplete: 'off'
-            required: required
-        label: Betreff
-        validators:
-          -
-            identifier: NotEmpty
-      -
-        defaultValue: ''
-        identifier: message
-        type: Textarea
-        properties:
-          rows: 12
-          fluidAdditionalAttributes:
-            required: required
-            minlength: '0'
-            maxlength: '2000'
-        label: 'Ihre Nachricht'
-        validators:
-          -
-            identifier: NotEmpty
-          -
-            options:
-              minimum: '0'
-              maximum: '2000'
-            identifier: StringLength
+    - renderingOptions:
+          previousButtonLabel: "Previous step"
+          nextButtonLabel: "Neue Seite"
+      identifier: page-1
+      type: Page
+      renderables:
+          - defaultValue: ""
+            identifier: lastname
+            type: Text
+            properties:
+                fluidAdditionalAttributes:
+                    disabled: disabled
+                    autocomplete: "off"
+            label: Nachname
+          - defaultValue: ""
+            identifier: firstname
+            type: Text
+            properties:
+                fluidAdditionalAttributes:
+                    disabled: disabled
+                    autocomplete: "off"
+            label: Vorname
+          - defaultValue: ""
+            identifier: company
+            type: Text
+            properties:
+                fluidAdditionalAttributes:
+                    disabled: disabled
+                    autocomplete: "off"
+            label: Firma/Organisation
+          - defaultValue: ""
+            identifier: email
+            type: Text
+            properties:
+                fluidAdditionalAttributes:
+                    disabled: disabled
+                    autocomplete: "off"
+            label: "E-Mail Adresse"
+          - defaultValue: ""
+            identifier: phone
+            type: Text
+            properties:
+                fluidAdditionalAttributes:
+                    disabled: disabled
+                    autocomplete: "off"
+            label: Telefonnummer
+          - defaultValue: ""
+            identifier: subject
+            type: Text
+            properties:
+                fluidAdditionalAttributes:
+                    autocomplete: "off"
+                    required: required
+            label: Betreff
+            validators:
+                - identifier: NotEmpty
+          - defaultValue: ""
+            identifier: message
+            type: Textarea
+            properties:
+                rows: 12
+                fluidAdditionalAttributes:
+                    required: required
+                    minlength: "0"
+                    maxlength: "2000"
+            label: "Ihre Nachricht"
+            validators:
+                - identifier: NotEmpty
+                - options:
+                      minimum: "0"
+                      maximum: "2000"
+                  identifier: StringLength

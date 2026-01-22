@@ -118,7 +118,8 @@ class StatisticController extends AbstractController
         $this->setKitodoStoragePid();
 
         // first we find the document object
-        $this->document = $this->kitodoDocumentRepository->findOneByRecordId($id);
+        // $id is the document UID passed from the frontend
+        $this->document = $this->kitodoDocumentRepository->findByUid((int)$id);
 
         if (! $this->document) {
             $this->view->assign('counted', -1);
