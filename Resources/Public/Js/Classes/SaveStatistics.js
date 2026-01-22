@@ -7,7 +7,10 @@ class SaveStatistics {
         }
         this.documentId = null;
 
-        // Get the document ID from URL parameters (tx_dlf[id])
+        // FIXME: Document ID retrieval needs refactoring for TYPO3 v12
+        // Currently extracts document ID from legacy query parameter tx_dlf[id].
+        // Note: This only works with non-routed URLs containing the exact parameter "tx_dlf[id]=<documentId>".
+        // Routed URLs are not supported by this implementation.
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('tx_dlf[id]')) {
             this.documentId = urlParams.get('tx_dlf[id]');
