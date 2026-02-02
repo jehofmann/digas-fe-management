@@ -1,13 +1,57 @@
 <f:layout name="Email" />
 
 <f:section name="main">
+    <p>
+        <strong
+            ><f:translate
+                key="requestKitodoAccess.email.toUser.subject"
+                extensionName="digas_fe_management"
+        /></strong>
+    </p>
 
-    <f:render partial="Basket/Table" arguments="{documents:documents, showRemoveLink:0}" />
+    <f:render
+        partial="Basket/Table"
+        arguments="{documents:documents, showRemoveLink:0}"
+    />
 
     <f:if condition="{message}">
-        <p><f:format.nl2br><f:format.htmlentitiesDecode>{message}</f:format.htmlentitiesDecode></f:format.nl2br></p>
+        <h3>
+            <f:translate
+                key="emailRequestKitodoAccessUserMessage"
+                extensionName="digas_fe_management"
+            />
+        </h3>
+        <blockquote
+            style="
+                margin: 10px 0;
+                padding: 10px;
+                border-left: 3px solid #519651;
+                background-color: #f9f9f9;
+            "
+        >
+            <p>
+                <strong
+                    ><f:translate
+                        key="requestKitodoAccess.email.toUser.message"
+                        extensionName="digas_fe_management"
+                /></strong>
+            </p>
+            <p>
+                <f:format.nl2br
+                    ><f:format.htmlentitiesDecode
+                        >{message}</f:format.htmlentitiesDecode
+                    ></f:format.nl2br
+                >
+            </p>
+        </blockquote>
     </f:if>
 
-    <p><f:translate key="emailNoReplyNotifyText" /></p>
+    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #ddd" />
 
+    <p style="font-size: 12px; color: #666">
+        <f:translate
+            key="emailNoReplyNotifyText"
+            extensionName="digas_fe_management"
+        />
+    </p>
 </f:section>
