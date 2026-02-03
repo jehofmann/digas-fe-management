@@ -1,13 +1,15 @@
 <f:layout name="Email" />
 
 <f:section name="main">
-    <p>
-        <strong
-            ><f:translate
-                key="requestKitodoAccess.email.toUser.subject"
-                extensionName="digas_fe_management"
-        /></strong>
-    </p>
+
+    <div
+        style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif"
+    >
+        <h2 style="color: #519651; margin-bottom: 20px">
+            <f:translate
+                 key="requestKitodoAccess.email.toUser.subject"
+                extensionName="digas_fe_management" />
+        </h2>
 
     <f:render
         partial="Basket/Table"
@@ -30,11 +32,11 @@
             "
         >
             <p>
-                <strong
-                    ><f:translate
-                        key="requestKitodoAccess.email.toUser.message"
-                        extensionName="digas_fe_management"
-                /></strong>
+            <h3 style="line-height: 1.6; color: #333; margin-bottom: 20px">
+                <f:translate
+                    key="requestKitodoAccess.email.toUser.message"
+                    extensionName="digas_fe_management" />
+            </h3>
             </p>
             <p>
                 <f:format.nl2br
