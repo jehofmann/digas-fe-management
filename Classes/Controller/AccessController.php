@@ -30,11 +30,15 @@ use Slub\DigasFeManagement\Domain\Model\Access;
 use Slub\DigasFeManagement\Domain\Model\User;
 use Slub\DigasFeManagement\Domain\Repository\AccessRepository;
 use Slub\DigasFeManagement\Domain\Repository\KitodoDocumentRepository;
+use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Messaging\AbstractMessage;
+use TYPO3\CMS\Core\Site\SiteFinder;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use TYPO3\CMS\Fluid\View\StandaloneView;
 
 /**
  * Class AccessController
@@ -175,12 +179,182 @@ class AccessController extends AbstractController
             }
         }
 
+        $this->persistenceManager->persistAll();
+
+        $accessEntries = $this->accessRepository->findAccessGrantedEntriesByUser($user->getUid());
+        if (!empty($accessEntries)) {
+            $this->notifyUser($user, $accessEntries);
+            $this->persistenceManager->persistAll();
+        }
+
         $this->addFlashMessage(
             LocalizationUtility::translate($this->settings['languageFile'] . ':access.user.inform.queued')
         );
 
         //redirect to list view
         $this->redirect('list', null, null, ['user' => $user]);
+    }
+
+    /**
+     * Prepare and send access granted/rejected notification
+     *
+     * @param User $user
+     * @param Access[] $accessEntries
+     * @return void
+     */
+    protected function notifyUser(User $user, array $accessEntries): void
+    {
+        if (empty($accessEntries)) {
+            return;
+        }
+
+        $documentsList = [];
+        foreach ($accessEntries as $accessEntry) {
+            $dlfDocument = $accessEntry->getDlfDocument();
+            if (!$dlfDocument) {
+                continue; // Skip entries without valid document
+            }
+
+            $documentsList[] = [
+                'recordId' => $dlfDocument->getRecordId(),
+                'documentTitle' => $dlfDocument->getTitle(),
+                'endTime' => $accessEntry->getEndTime(),
+                'rejected' => $accessEntry->getRejected(),
+                'rejectedReason' => $accessEntry->getRejectedReason()
+            ];
+
+            $notificationTimestamp = strtotime('now');
+            $this->updateAccessEntry($accessEntry, $notificationTimestamp);
+        }
+
+        if (!empty($documentsList)) {
+            $this->sendNotificationEmail($user, $documentsList);
+        }
+    }
+
+    /**
+     * Update access entry after notification
+     *
+     * @param Access $accessEntry
+     * @param int $notificationTimestamp
+     * @return void
+     */
+    protected function updateAccessEntry(Access $accessEntry, int $notificationTimestamp): void
+    {
+        $accessEntry->setAccessGrantedNotification($notificationTimestamp);
+        $accessEntry->setInformUser(false);
+        $this->accessRepository->update($accessEntry);
+    }
+
+    /**
+     * Send notification email to user
+     *
+     * @param User $user
+     * @param array $documentsList
+     * @return void
+     */
+    protected function sendNotificationEmail(User $user, array $documentsList): void
+    {
+        try {
+            $this->initUserLocale($user);
+
+            $userEmail = $user->getEmail();
+            $userFullName = $user->getFullName();
+            if (!GeneralUtility::validEmail($userEmail)) {
+                $this->addFlashMessage(
+                    'Keine gültige E-Mail-Adresse für Benutzer',
+                    '',
+                    AbstractMessage::WARNING
+                );
+                return;
+            }
+
+            if (empty($this->settings['adminEmail']) || empty($this->settings['adminName'])) {
+                $this->addFlashMessage(
+                    'Admin-E-Mail-Konfiguration fehlt in den Einstellungen',
+                    '',
+                    AbstractMessage::ERROR
+                );
+                return;
+            }
+
+            $email = GeneralUtility::makeInstance(MailMessage::class);
+
+            $textEmail = $this->generateNotificationEmail(
+                $documentsList,
+                'EXT:digas_fe_management/Resources/Private/Templates/Email/Text/KitodoAccessGrantedNotification.html'
+            );
+            $htmlEmail = $this->generateNotificationEmail(
+                $documentsList,
+                'EXT:digas_fe_management/Resources/Private/Templates/Email/Html/KitodoAccessGrantedNotification.html',
+                'html'
+            );
+
+            $emailSubject = LocalizationUtility::translate('kitodoAccessGrantedNotification.email.subject', 'DigasFeManagement') ?? 'Dokumentenzugriff';
+
+            $email->setSubject($emailSubject)
+                ->setFrom([
+                    $this->settings['adminEmail'] => $this->settings['adminName']
+                ])
+                ->setTo([
+                    $userEmail => $userFullName
+                ])
+                ->text($textEmail)
+                ->html($htmlEmail)
+                ->send();
+
+        } catch (\Exception $e) {
+            $this->addFlashMessage(
+                'E-Mail konnte nicht versendet werden: ' . $e->getMessage(),
+                '',
+                AbstractMessage::ERROR
+            );
+        }
+    }
+
+    /**
+     * Generate notification mail content
+     *
+     * @param array $documentsList
+     * @param string $emailTemplate
+     * @param string $emailType
+     * @return string
+     */
+    protected function generateNotificationEmail(array $documentsList, string $emailTemplate, string $emailType = 'text'): string
+    {
+        $htmlView = GeneralUtility::makeInstance(StandaloneView::class);
+        $htmlView->setFormat($emailType);
+        $htmlView->setTemplatePathAndFilename($emailTemplate);
+
+        $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($this->settings['pids']['loginPage']);
+        $loginUrl = (string)$site->getRouter()->generateUri($this->settings['pids']['loginPage']);
+        $htmlView->assignMultiple([
+            'loginUrl' => $loginUrl,
+            'documentsList' => $documentsList
+        ]);
+
+        return $htmlView->render();
+    }
+
+    /**
+     * Init user locale to send emails in users selected language
+     *
+     * @param User $user
+     * @return void
+     */
+    protected function initUserLocale(User $user): void
+    {
+        switch ($user->getLocale()) {
+            case '1':
+                setlocale(LC_ALL, 'en_US.utf8');
+                $GLOBALS['LANG']->init('en');
+                break;
+            case '0':
+            default:
+                setlocale(LC_ALL, 'de_DE.utf8');
+                $GLOBALS['LANG']->init('de');
+                break;
+        }
     }
 
     /**
@@ -413,7 +587,8 @@ class AccessController extends AbstractController
 
         // add success message
         $message = LocalizationUtility::translate($this->settings['languageFile'] . ':access.success.deleted');
-        $this->addFlashMessage(sprintf($message, $access->getDlfDocument()->getTitle()));
+        $documentTitle = $access->getDlfDocument() ? $access->getDlfDocument()->getTitle() : $access->getRecordId();
+        $this->addFlashMessage(sprintf($message, $documentTitle));
 
         // redirect to list view
         $this->redirect('list', null, null, ['user' => $user]);

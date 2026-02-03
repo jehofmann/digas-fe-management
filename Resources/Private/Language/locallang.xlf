@@ -93,7 +93,7 @@
 				<source><![CDATA[Inform user about new access / rejected access]]></source>
 			</trans-unit>
 			<trans-unit id="access.user.inform.queued">
-				<source><![CDATA[Message to user about new document access / rejection was queued]]></source>
+				<source><![CDATA[Message to user about new document access / rejection was sent]]></source>
 			</trans-unit>
 			<trans-unit id="administration.listing.table.actions">
 				<source><![CDATA[Actions]]></source>

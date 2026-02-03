@@ -123,8 +123,8 @@
 				<target><![CDATA[Nutzer über neue Freigaben / Ablehnungen informieren]]></target>
 			</trans-unit>
 			<trans-unit id="access.user.inform.queued" approved="yes">
-				<source><![CDATA[Message to user about new document access / rejection was queued]]></source>
-				<target><![CDATA[Nachricht an Benutzer über neuen Dokumentenzugriff / Ablehnung wurde in die Warteschlange gestellt]]></target>
+				<source><![CDATA[Message to user about new document access / rejection was sent]]></source>
+				<target><![CDATA[Nachricht an Benutzer über neuen Dokumentenzugriff / Ablehnung wurde versendet]]></target>
 			</trans-unit>
 			<trans-unit id="administration.listing.table.actions" approved="yes">
 				<source><![CDATA[Actions]]></source>
