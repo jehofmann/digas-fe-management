@@ -440,7 +440,7 @@
 			</trans-unit>
 			<trans-unit id="emailDisable.text2" approved="yes">
 				<source><![CDATA[To reactivate your account, please send an email to the administrator.]]></source>
-				<target><![CDATA[Um Ihr Nutzerkonto zu reaktivieren, wenden Sie sich bitte an den Administrator.]]></target>
+				<target><![CDATA[Um Ihr Nutzerkonto zu reaktivieren, wenden Sie sich bitte an bohrarchiv@lfulg.sachsen.de.]]></target>
 			</trans-unit>
 			<trans-unit id="emailDisable.text3" approved="yes">
 				<source><![CDATA[You may register a new account. Please note, you cannot use the same email address as in this disabled account.]]></source>
