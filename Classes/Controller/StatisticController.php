@@ -194,7 +194,7 @@ class StatisticController extends AbstractController
     {
         $adminRequest = GeneralUtility::_GP('tx_digasfemanagement_administration');
 
-        if ($adminRequest['user'] > 0 && $adminRequest['action'] === 'show') {
+        if (($adminRequest['user'] ?? 0) > 0 && ($adminRequest['action'] ?? '') === 'show') {
             $userId = $adminRequest['user'];
         } else {
             return false;

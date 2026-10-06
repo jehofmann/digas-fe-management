@@ -143,7 +143,7 @@ class AccessController extends AbstractController
             'accessExpired' => $accessExpired,
             'accessRejected' => $accessRejected,
             'user' => $user,
-            'errorItem' => $arguments['error'],
+            'errorItem' => $arguments['error'] ?? null,
             'informUser' => $informUser,
             'isAdminUser' => $this->isAdminAccessGranted()
         ]);
@@ -251,7 +251,7 @@ class AccessController extends AbstractController
 
         // add success message
         $arguments = $this->request->getArguments();
-        $message = LocalizationUtility::translate($this->settings['languageFile'] . ':access.success.' . ($arguments['edit'] ? 'updated' : 'granted'));
+        $message = LocalizationUtility::translate($this->settings['languageFile'] . ':access.success.' . (($arguments['edit'] ?? false) ? 'updated' : 'granted'));
         $this->addFlashMessage(sprintf($message, $access->getRecordId()));
 
         // redirect to list view
@@ -431,7 +431,7 @@ class AccessController extends AbstractController
 
         // first check, if we are allowed to access this action (be part of feUserAdminGroups)
         $feUserAdminGroups = array_intersect(
-            explode(',', $GLOBALS['TSFE']->fe_user->user['usergroup']),
+            explode(',', $GLOBALS['TSFE']->fe_user->user['usergroup'] ?? ''),
             explode(',', $this->settings['feUserAdminGroups'])
         );
 

@@ -57,13 +57,13 @@ class ExtendController extends AbstractController
         $user = GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('frontend.user', 'id', 0) > 0;
 
         //check if fe_user exists AND action is create --> redirect
-        if ($user && $feManagerParams['action'] === 'create') {
+        if ($user && ($feManagerParams['action'] ?? '') === 'create') {
             //remove all femanager flashMessages concerning profile create / login
             $this->controllerContext->getFlashMessageQueue('extbase.flashmessages.tx_femanager_pi1')->getAllMessagesAndFlush();
             //redirect
             $this->redirectToKitodoView(['tx_dlf' => $kitodoParams]);
         }
-        elseif ($feManagerParams['action'] === 'create') {
+        elseif (($feManagerParams['action'] ?? '') === 'create') {
             $this->view->assign('checkYes', true);
         }
 
@@ -145,10 +145,10 @@ class ExtendController extends AbstractController
             $arguments = $this->request->getArguments();
 
             $this->view->assignMultiple([
-                'step' => $arguments['step']
+                'step' => $arguments['step'] ?? null
             ]);
 
-            if ($arguments['disable']) {
+            if ($arguments['disable'] ?? false) {
 
                 // first send confirmation about deactivation of account
                 $variables = ['user' => $this->user, 'settings' => $this->settings, 'hash' => HashUtility::createHashForUser($this->user)];

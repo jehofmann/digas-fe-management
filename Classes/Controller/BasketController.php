@@ -317,9 +317,11 @@ class BasketController extends AbstractController
      */
     protected function getRequestIdsFromCookie(): array
     {
-        $kitodoRequestIds = $_COOKIE['dlf-requests'];
+        $kitodoRequestIds = $_COOKIE['dlf-requests'] ?? '';
         if (!empty($kitodoRequestIds)) {
-            return json_decode($kitodoRequestIds);
+            // cookie is client-controlled: anything but a JSON array would violate the return type
+            $decoded = json_decode($kitodoRequestIds);
+            return is_array($decoded) ? $decoded : [];
         }
         return [];
     }

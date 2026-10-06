@@ -76,7 +76,7 @@ class NewController extends \In2code\Femanager\Controller\NewController
     {
 
         // change e-mail
-        if ($this->settings['new']['changeEmail']) {
+        if ($this->settings['new']['changeEmail'] ?? false) {
 
             //get new e-mail-address
             $newEmailAddress = $user->getEmail();
@@ -110,7 +110,7 @@ class NewController extends \In2code\Femanager\Controller\NewController
     protected function createUserConfirmationRequest(\In2code\Femanager\Domain\Model\User $user)
     {
         $this->sendCreateUserConfirmationMail($user);
-        $this->addFlashMessage(LocalizationUtility::translate($this->settings['new']['changeEmail'] ? 'emailChangedRequestWaitingForUserConfirm' : 'createRequestWaitingForUserConfirm', 'DigasFeManagement'));
+        $this->addFlashMessage(LocalizationUtility::translate(($this->settings['new']['changeEmail'] ?? false) ? 'emailChangedRequestWaitingForUserConfirm' : 'createRequestWaitingForUserConfirm', 'DigasFeManagement'));
         $this->redirectByAction('new', 'requestRedirect');
     }
 }

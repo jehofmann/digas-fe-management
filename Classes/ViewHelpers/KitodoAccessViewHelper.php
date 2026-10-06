@@ -83,7 +83,7 @@ class KitodoAccessViewHelper extends AbstractViewHelper
         // check group access - return TRUE if access by group is granted
         if (!empty($settings = KitodoAccessViewHelper::getSettings())) {
             $kitodoGroupsAccess = array_intersect(
-                explode(',', $GLOBALS['TSFE']->fe_user->user['usergroup']),
+                explode(',', $GLOBALS['TSFE']->fe_user->user['usergroup'] ?? ''),
                 explode(',', $settings['kitodoAccessGroups'])
             );
         }

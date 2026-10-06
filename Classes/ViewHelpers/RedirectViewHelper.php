@@ -79,8 +79,12 @@ class RedirectViewHelper extends PageViewHelper
      */
     protected static function setCookie(string $newKitodoRequestId) {
         // get cookie 'dlf-requests'
-        $kitodoRequestIds = $_COOKIE['dlf-requests'];
+        $kitodoRequestIds = $_COOKIE['dlf-requests'] ?? '';
         $kitodoRequestIds = !empty($kitodoRequestIds) ? json_decode($kitodoRequestIds) : [];
+        // cookie is client-controlled: anything but a JSON array would make in_array() throw on PHP 8
+        if (!is_array($kitodoRequestIds)) {
+            $kitodoRequestIds = [];
+        }
 
         // add ID to cookie 'dlf-request' if ID is not already contained
         if (!in_array($newKitodoRequestId, $kitodoRequestIds)) {

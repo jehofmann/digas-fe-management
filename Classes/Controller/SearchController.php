@@ -93,11 +93,11 @@ class SearchController extends AbstractController
 
             $searchParams = GeneralUtility::_GP('tx_dlf_search');
 
-            if (is_array($searchParams) && array_key_exists('query',$searchParams['searchParameter']) && array_key_exists('fulltext',$searchParams['searchParameter'])) {
+            if (is_array($searchParams) && is_array($searchParams['searchParameter'] ?? null) && array_key_exists('query',$searchParams['searchParameter']) && array_key_exists('fulltext',$searchParams['searchParameter'])) {
                 $arguments = $this->request->getArguments();
 
                 $searchRequest = new Search();
-                $title = $arguments['title'] ? $arguments['title'] : LocalizationUtility::translate('search', 'DigasFeManagement').': '.strftime('%d.%m.%y - %H:%M');
+                $title = ($arguments['title'] ?? '') ? $arguments['title'] : LocalizationUtility::translate('search', 'DigasFeManagement').': '.strftime('%d.%m.%y - %H:%M');
 
                 $searchRequest->setTitle($title);
                 $searchRequest->setSearchParams($searchParams['searchParameter']);
